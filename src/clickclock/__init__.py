@@ -1,2 +1,2 @@
-def main() -> None:
-    print("Hello from clickclock!")
+def main():
+    print("Hello, what the f**king shit!")
