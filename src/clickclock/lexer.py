@@ -1,0 +1,52 @@
+# src/clickclock/lexer.py
+
+
+import re
+from .errors import error
+
+
+def preprocess(text) -> list[tuple[int, str, int]]:
+	lines = []
+	macros = {}
+	macro_allowed = True
+	
+	for index, line in enumerate(text.splitlines(), start=1):
+		# 展开tab、去注释、去空行
+		line = line.expandtabs(4)
+		idx = line.find("#")
+		code = line.rstrip() if idx == -1 else line[:idx].rstrip()
+		if not code:
+			continue
+		
+		# 计算缩进
+		stripped = code.lstrip()
+		indent = len(code) - len(stripped)
+		if indent % 4 != 0:
+			error(f"缩进的空格数应为 4 的倍数，但行前有 {indent} 个空格", index, line)
+		indent_level = indent // 4
+		
+		# 处理宏定义
+		if ":=" in stripped:
+			if not macro_allowed:
+				error("宏只能在文件开头定义", index, line)
+			if indent_level != 0:
+				error(f"宏定义必须在顶层", index, line)
+			key, value = stripped.split(":=", 1)
+			key = key.strip()
+			value = value.strip()
+			if not re.match(r'^\w+$', key):
+				error(f"非法宏名 {key}", index, line)
+			if key in macros:
+				error(f"宏 {key} 重复定义", index, line)
+			macros[key] = value
+			continue  # 宏定义行不加入代码行列表
+		
+		# 遇到非宏行，禁止后续再定义宏
+		macro_allowed = False
+		
+		# 宏展开
+		for key, val in macros.items():
+			stripped = stripped.replace(key, val)
+		lines.append((index, stripped, indent_level))
+	
+	return lines
