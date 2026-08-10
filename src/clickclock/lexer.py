@@ -2,7 +2,7 @@
 
 
 import re
-from .errors import error
+from .errors import line_error
 
 
 def preprocess(text) -> list[tuple[int, str, int]]:
@@ -22,22 +22,22 @@ def preprocess(text) -> list[tuple[int, str, int]]:
 		stripped = code.lstrip()
 		indent = len(code) - len(stripped)
 		if indent % 4 != 0:
-			error(f"缩进的空格数应为 4 的倍数，但行前有 {indent} 个空格", index, line)
+			line_error(f"缩进的空格数应为 4 的倍数，但行前有 {indent} 个空格", index, line)
 		indent_level = indent // 4
 		
 		# 处理宏定义
 		if ":=" in stripped:
 			if not macro_allowed:
-				error("宏只能在文件开头定义", index, line)
+				line_error("宏只能在文件开头定义", index, line)
 			if indent_level != 0:
-				error(f"宏定义必须在顶层", index, line)
+				line_error("宏定义应该只在顶层出现", index, line)
 			key, value = stripped.split(":=", 1)
 			key = key.strip()
 			value = value.strip()
 			if not re.match(r'^\w+$', key):
-				error(f"非法宏名 {key}", index, line)
+				line_error(f"非法宏名 {key}", index, line)
 			if key in macros:
-				error(f"宏 {key} 重复定义", index, line)
+				line_error(f"宏 {key} 重复定义", index, line)
 			macros[key] = value
 			continue  # 宏定义行不加入代码行列表
 		
@@ -46,7 +46,8 @@ def preprocess(text) -> list[tuple[int, str, int]]:
 		
 		# 宏展开
 		for key, val in macros.items():
-			stripped = stripped.replace(key, val)
+			stripped = re.sub(r'\b' + re.escape(key) + r'\b', val, stripped)
+		
 		lines.append((index, stripped, indent_level))
 	
 	return lines

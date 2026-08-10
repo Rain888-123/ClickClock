@@ -1,48 +1,46 @@
 # src/clickclock/__init__.py
 
 
-from .parser import parse
 from .lexer import preprocess
+from .parser import parse
+from .simulator import Simulator
 
-test = '''true := ON
-clk := 10000
 
-# 使用标准库
+def load_config(path = "config/modules.toml") -> dict[str, str|list[str]|bool]:
+    from pathlib import Path
+    from tomllib import load
+    with open(Path(__file__).parent.parent.parent / path, "rb") as f:
+        return load(f)
+
+
+def main() -> None:
+    test = '''# 使用标准库
 use std
 
 module program_counter[32]: # module 模块名[位宽]:
     input en[1], data[32]
     output out[32] <- cnt.q
-
-    mux m[32]: # 这是一行注释
-        sel=en
-        a=add.out
-        b=data
-    dff cnt[32]:
-        init 0x80000000
-        we=true
-        d=mux.out
+    
     add add4[32]:
         a=cnt.q
         b=4
-        cin=OFF
+        cin=0
+    mux m[32]: # 这是一行注释
+        sel=en
+        a=add4.sum
+        b=data
+    dff cnt[32]:
+        we=1
+        d=m.out
 
 # 你好，这是末尾
-    '''
-
-
-def main():
-    result = parse(preprocess(test))
-    print("\n解析结果：")
-    print(f"引用库：{result.uses}")
-    for mod in result.modules:
-        print(f"模块：{mod.name}[{mod.width}]")
-        print(f"\t输入：{[f'{i.name}[{i.width}]' for i in mod.inputs]}")
-        print(f"\t输出：{[f'{o.name}[{o.width}] <- {o.source}' for o in mod.outputs]}")
-        for inst in mod.instances:
-            print(f"\t例化：{inst.mod_name} {inst.name}[{inst.width}]", end="")
-            if inst.init is not None:
-                print(f" init={hex(inst.init)}", end="")
+        '''
+    ast = parse(preprocess(test))
+    sim = Simulator(ast, load_config())
+    for module in ast.modules:
+        sim.init(module)
+        for _ in range(10):
+            sim.step(module)
+            print(sim.top_signals)
+            print(sim.inst_signals)
             print()
-            for port, sig in inst.port_map:
-                print(f"\t\t{port} = {sig}")

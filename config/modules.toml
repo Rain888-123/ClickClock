@@ -1,0 +1,19 @@
+# config/modules.toml
+
+[mux]
+description = "多路选择器"
+inputs = ["sel", "a", "b"]
+outputs = ["out"]
+sequential = false
+
+[dff]
+description = "带使能的 D 触发器"
+inputs = ["we", "d"]
+outputs = ["q"]
+sequential = true
+
+[add]
+description = "加法器"
+inputs = ["a", "b", "cin"]
+outputs = ["sum", "cout"]
+sequential = false
