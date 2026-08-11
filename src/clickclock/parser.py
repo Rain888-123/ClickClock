@@ -3,7 +3,7 @@
 
 import re
 
-from .errors import line_error
+from .errors import line_error, value_error
 
 
 class Node:
@@ -20,9 +20,10 @@ class AST:
 		
 		
 		class Output(Node):
-			def __init__(self, name, width, source) -> None:
+			def __init__(self, name, width, source, slice_info) -> None:
 				super().__init__(name, width)
 				self.source = source
+				self.slice_info = slice_info
 		
 		
 		def __init__(self, name, width) -> None:
@@ -85,6 +86,7 @@ def parse(lines) -> AST:
 			indent_state.cur_inst = None
 		
 		elif first == "use":
+			line_error("正在实现 use 中，敬请期待", index, line)  # TODO: 实现外部模块导入功能
 			if indent != 0:
 				line_error("use 应该只在顶层出现", index, line)
 			items = [item.strip() for item in others.split(",") if item.strip()]
@@ -99,10 +101,20 @@ def parse(lines) -> AST:
 			indent_state.cur_mod.inputs.extend([indent_state.cur_mod.Input(name, int(width)) for name, width in matches])
 		
 		elif indent_state.cur_mod is not None and first == "output":
-			matches = re.findall(r'(\w+)\[(\d+)]\s*<-\s*([\w\[\].]+)', others)
+			output_re = re.compile(r'(\w+)\[(\d+)]\s*<-\s*([a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)?)(?:\[(\d+)(?::(\d+))?])?')
+			matches = output_re.findall(others)
 			if not matches:
 				line_error("输出端口格式错误", index, line)
-			indent_state.cur_mod.outputs.extend([indent_state.cur_mod.Output(name, int(width), source) for name, width, source in matches])
+			
+			for name, width, source, high_str, low_str in matches:
+				slice_info = None
+				if high_str:
+					high = int(high_str)
+					low = int(low_str) if low_str else high
+					slice_info = (high, low)
+				indent_state.cur_mod.outputs.append(
+					indent_state.cur_mod.Output(name, int(width), source, slice_info)
+				)
 		
 		elif indent_state.cur_mod is not None and first == "init":
 			if indent_state.cur_inst is None:
@@ -128,15 +140,47 @@ def parse(lines) -> AST:
 				port_name = line[:eq_pos].strip()
 				signal = line[eq_pos + 1:].strip()
 				
-				# 检查等号数量，避免歧义
 				if signal.count("=") > 0:
 					line_error("端口映射值应只包含 1 个等号", index, line)
-				
 				if indent_state.cur_inst is None:
 					line_error("端口映射必须在例化语句之后", index, line)
-				indent_state.cur_inst.port_map.append((port_name, signal))
+				
+				# 检查重复端口
+				if any(p == port_name for p, _, _ in indent_state.cur_inst.port_map):
+					line_error(f"端口 {port_name} 重复定义", index, line)
+				
+				# 判断是否是立即数（数字字面量）
+				try:
+					int(signal, 0)
+					# 是立即数，直接存入，不带切片信息
+					indent_state.cur_inst.port_map.append((port_name, signal, None))
+				except ValueError:
+					# 不是立即数，按信号名+切片解析
+					signal_re = re.compile(r'^([a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)?)(?:\[(\d+)(?::(\d+))?])?$')
+					match = signal_re.match(signal)
+					if not match:
+						line_error("信号格式错误", index, line)
+					
+					base_signal = match.group(1)
+					high_str = match.group(2)
+					low_str = match.group(3)
+					
+					slice_info = None
+					if high_str is not None:
+						high = int(high_str)
+						low = int(low_str) if low_str is not None else high
+						slice_info = (high, low)
+					
+					indent_state.cur_inst.port_map.append((port_name, base_signal, slice_info))
 				
 		else:
 			line_error("非法代码", index, line)
+		
+	# 检查每个模块是否定义了 input 和 output
+	for mod in ast.modules:
+		if not mod.inputs:
+			value_error(f"模块缺少 input 声明", mod.name)
+		if not mod.outputs:
+			value_error(f"模块缺少 output 声明", mod.name)
 	
 	return ast
