@@ -89,3 +89,9 @@ description = "有符号小于器"
 inputs = ["a", "b"]
 outputs = ["out"]
 sequential = false
+
+[dec]
+description = "N-2^N 译码器"
+inputs = ["in"]
+outputs = ["out"]
+sequential = false

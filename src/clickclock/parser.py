@@ -2,7 +2,6 @@
 
 
 import re
-
 from .errors import line_error, value_error
 
 
@@ -42,7 +41,6 @@ class AST:
 	
 	def __init__(self) -> None:
 		self.modules = []
-		self.uses = []
 
 
 class IndentState:
@@ -85,15 +83,6 @@ def parse(lines) -> AST:
 			indent_state.cur_mod = new_mod
 			indent_state.cur_inst = None
 		
-		elif first == "use":
-			line_error("正在实现 use 中，敬请期待", index, line)  # TODO: 实现外部模块导入功能
-			if indent != 0:
-				line_error("use 应该只在顶层出现", index, line)
-			items = [item.strip() for item in others.split(",") if item.strip()]
-			for item in items:
-				if item not in ast.uses:
-					ast.uses.append(item)
-		
 		elif indent_state.cur_mod is not None and first == "input":
 			matches = re.findall(r'(\w+)\[(\d+)]', others)
 			if not matches:
@@ -116,11 +105,6 @@ def parse(lines) -> AST:
 					indent_state.cur_mod.Output(name, int(width), source, slice_info)
 				)
 		
-		elif indent_state.cur_mod is not None and first == "init":
-			if indent_state.cur_inst is None:
-				line_error("init 必须在例化语句之后", index, line)
-			indent_state.cur_inst.init = int(others, 0)
-		
 		elif indent_state.cur_mod is not None:
 			# 尝试匹配子模块例化
 			match = re.match(r'([a-zA-Z_]\w*)\s+([a-zA-Z_]\w*)\[(\d+)]:', line)
@@ -142,7 +126,7 @@ def parse(lines) -> AST:
 				
 				if signal.count("=") > 0:
 					line_error("端口映射值应只包含 1 个等号", index, line)
-				if indent_state.cur_inst is None:
+				if not indent_state.cur_inst:
 					line_error("端口映射必须在例化语句之后", index, line)
 				
 				# 检查重复端口

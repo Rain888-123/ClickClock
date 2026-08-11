@@ -71,6 +71,11 @@ def _eval_slt(a, b, width) -> int:
 		return int((a & _mask(width)) < (b & _mask(width)))
 
 
+def _eval_dec(in_val, width) -> int:
+	idx = in_val & _mask(width)
+	return (1 << idx) & _mask(1 << width)
+
+
 EVAL_MAP = {
 	"mux": _eval_mux,
 	"dff": _eval_dff,
@@ -87,4 +92,5 @@ EVAL_MAP = {
 	"eq": _eval_eq,
 	"ult": _eval_ult,
 	"slt": _eval_slt,
+	"dec": _eval_dec,
 }

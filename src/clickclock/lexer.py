@@ -2,11 +2,10 @@
 
 
 import re
-
 from .errors import line_error
 
 
-def preprocess(text) -> list[tuple[int, str, int]]:
+def tokenize(text) -> list[tuple[int, str, int]]:
 	lines = []
 	macros = {}
 	macro_allowed = True

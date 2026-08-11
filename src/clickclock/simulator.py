@@ -2,7 +2,6 @@
 
 
 from .errors import value_error
-from .lib import EVAL_MAP
 
 SEQUENTIAL = True
 IN = 0
@@ -10,12 +9,13 @@ OUT = 1
 
 
 class Simulator:
-	def __init__(self, ast, config) -> None:
+	def __init__(self, ast, all_modules, eval_map) -> None:
 		self.ast = ast
 		self.top = {}, {}
 		self.inst = {}, {}
 		self.sorted_insts = None
-		self.config = config
+		self.all_modules = all_modules
+		self.eval_map = eval_map
 		self.cycle = 0
 	
 	def init(self, mod) -> None:
@@ -31,8 +31,8 @@ class Simulator:
 			self.top[OUT][out.name] = 0
 			
 		for inst in mod.instances:
-			mod_def = self.config.get(inst.mod_name)
-			if not mod_def:
+			mod_def = self.all_modules.get(inst.mod_name)
+			if mod_def is None:
 				value_error("未知模块类型", inst.mod_name)
 			for inp in mod_def["inputs"]:
 				self.inst[IN][f"{inst.name}.{inp}"] = 0
@@ -64,7 +64,9 @@ class Simulator:
 	
 	def _topological_sort(self, mod) -> list:
 		# 构建依赖图
-		comb_insts = [inst for inst in mod.instances if not self.config.get(inst.mod_name, {}).get("sequential", False)]
+		comb_insts = [
+			inst for inst in mod.instances if not self.all_modules.get(inst.mod_name, {}).get("sequential", False)
+		]
 		depends_on = {}
 		for inst in comb_insts:
 			deps = set()
@@ -104,7 +106,7 @@ class Simulator:
 	def _step(self, mod, mode = not SEQUENTIAL) -> None:
 		insts = self.sorted_insts if not mode else mod.instances
 		for inst in insts:
-			mod_def = self.config.get(inst.mod_name)
+			mod_def = self.all_modules.get(inst.mod_name)
 			if not mod_def:
 				value_error("未知模块类型", inst.mod_name)
 			if mode != mod_def.get("sequential", not SEQUENTIAL):
@@ -125,7 +127,7 @@ class Simulator:
 					signal_expr, slice_info = None, None
 				
 				if signal_expr:
-					args.append(self._get(signal_expr, slice_info) if signal_expr else 0)
+					args.append(self._get(signal_expr, slice_info))
 				else:
 					args.append(0)
 			if mode:
@@ -138,8 +140,8 @@ class Simulator:
 				self.inst[IN][f"{inst.name}.{port_name}"] = args[i]
 			
 			# 调用求值函数
-			func = EVAL_MAP.get(inst.mod_name)
-			if not func:
+			func = self.eval_map.get(inst.mod_name)
+			if func is None:
 				value_error("未知子模块类型", inst.mod_name)
 			result = func(*args)
 			

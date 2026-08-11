@@ -1,16 +1,18 @@
 # src/clickclock/__init__.py
 
 
-from .loader import load_source, load_config
-from .lexer import preprocess
+from . import loader
+from .preproc import expand
+from .lexer import tokenize
 from .parser import parse
 from .simulator import Simulator
 
 
 def main() -> None:
-    ast = parse(preprocess(load_source("test", "test")))
-    sim = Simulator(ast, load_config("modules"))
-    target_cycles = 100
+    text = expand(loader.source("test", "test"), "test")
+    ast = parse(tokenize(text))
+    sim = Simulator(ast, loader.config("modules"), loader.lib("lib").EVAL_MAP)
+    target_cycles = 256
     for module in ast.modules:
         sim.init(module)
     for _ in range(target_cycles):
