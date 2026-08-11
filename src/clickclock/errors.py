@@ -7,3 +7,7 @@ def line_error(msg, index, line) -> None:
 
 def value_error(msg, something) -> None:
     raise ValueError(f"{msg}，{something}")
+
+
+def file_error(path) -> None:
+    raise FileNotFoundError(f"找不到文件 {path}")

@@ -17,3 +17,57 @@ description = "加法器"
 inputs = ["a", "b", "cin"]
 outputs = ["sum", "cout"]
 sequential = false
+
+[not]
+description = "非门"
+inputs = ["a"]
+outputs = ["out"]
+sequential = false
+
+[and]
+description = "与门"
+inputs = ["a", "b"]
+outputs = ["out"]
+sequential = false
+
+[xor]
+description = "异或门"
+inputs = ["a", "b"]
+outputs = ["out"]
+sequential = false
+
+[or]
+description = "或门"
+inputs = ["a", "b"]
+outputs = ["out"]
+sequential = false
+
+[nand]
+description = "与非门"
+inputs = ["a", "b"]
+outputs = ["out"]
+sequential = false
+
+[nor]
+description = "或非门"
+inputs = ["a", "b"]
+outputs = ["out"]
+sequential = false
+
+[lsl]
+description = "逻辑左移"
+inputs = ["a", "offset"]
+outputs = ["out"]
+sequential = false
+
+[lsr]
+description = "逻辑右移"
+inputs = ["a", "offset"]
+outputs = ["out"]
+sequential = false
+
+[asr]
+description = "算术右移"
+inputs = ["a", "offset"]
+outputs = ["out"]
+sequential = false
