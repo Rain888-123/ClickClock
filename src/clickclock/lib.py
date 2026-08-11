@@ -54,6 +54,23 @@ def _eval_asr(a, offset, width) -> int:
 	return ((a << shift) >> (offset + shift)) & _mask(width)
 
 
+def _eval_eq(a, b, width) -> int:
+	return int((a & _mask(width)) == (b & _mask(width))) & _mask(1)
+
+
+def _eval_ult(a, b, width) -> int:
+	return int((a & _mask(width)) < (b & _mask(width))) & _mask(1)
+
+
+def _eval_slt(a, b, width) -> int:
+	sign_a = a >> (width - 1)
+	sign_b = b >> (width - 1)
+	if sign_a != sign_b:
+		return int(sign_a > sign_b)
+	else:
+		return int((a & _mask(width)) < (b & _mask(width)))
+
+
 EVAL_MAP = {
 	"mux": _eval_mux,
 	"dff": _eval_dff,
@@ -67,4 +84,7 @@ EVAL_MAP = {
 	"lsl": _eval_lsl,
 	"lsr": _eval_lsr,
 	"asr": _eval_asr,
+	"eq": _eval_eq,
+	"ult": _eval_ult,
+	"slt": _eval_slt,
 }

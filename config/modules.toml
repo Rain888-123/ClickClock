@@ -55,19 +55,37 @@ outputs = ["out"]
 sequential = false
 
 [lsl]
-description = "逻辑左移"
+description = "逻辑左移器"
 inputs = ["a", "offset"]
 outputs = ["out"]
 sequential = false
 
 [lsr]
-description = "逻辑右移"
+description = "逻辑右移器"
 inputs = ["a", "offset"]
 outputs = ["out"]
 sequential = false
 
 [asr]
-description = "算术右移"
+description = "算术右移器"
 inputs = ["a", "offset"]
+outputs = ["out"]
+sequential = false
+
+[eq]
+description = "判等器"
+inputs = ["a", "b"]
+outputs = ["out"]
+sequential = false
+
+[ult]
+description = "无符号小于器"
+inputs = ["a", "b"]
+outputs = ["out"]
+sequential = false
+
+[slt]
+description = "有符号小于器"
+inputs = ["a", "b"]
 outputs = ["out"]
 sequential = false
