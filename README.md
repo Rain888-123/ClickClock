@@ -33,9 +33,11 @@ uv run clickclock  # 或 clickclock
 
 ### 编写你的第一个电路
 
-在项目根目录创建 `test` 目录，创建一个 `test.clk` 文件在此目录下：
+项目默认读取 `test/test.clk` 文件。
 
-```text
+你也可以修改 `src/clickclock/__init__.py` 中的路径。
+
+```plaintext
 module program_counter[8]:  # module 模块名[位宽]:
     input en[1], data[8]
     output out[256] <- cnt.q

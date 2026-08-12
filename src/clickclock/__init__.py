@@ -15,6 +15,10 @@ from .parser import parse
 from .simulator import Simulator
 
 
+def gui() -> None:
+    pass
+
+
 def main() -> None:
     text = expand(loader.source("test", "test"), "test")
     ast = parse(tokenize(text))

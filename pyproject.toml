@@ -1,13 +1,15 @@
 [project]
 name = "clickclock"
 version = "0.1.0"
-description = "Add your description here"
-requires-python = ">=3.12"
-dependencies = []
+description = "轻量级数字电路仿真器，使用自定义 .clk 硬件描述语言"
+requires-python = ">=3.12.8"
+dependencies = ["pyside6"]
 license = { text = "GPL-3.0-or-later" }
+readme = "README.md"
 
 [project.scripts]
 clickclock = "clickclock:main"
+clickclock-gui = "clickclock:gui"
 
 [build-system]
 requires = ["hatchling"]
