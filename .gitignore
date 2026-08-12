@@ -2,8 +2,7 @@
 .venv/
 __pycache__/
 test/
+build/
 *.pyc
 *.log
 *.dll
-*.so
-*.dylib

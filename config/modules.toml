@@ -36,6 +36,12 @@ inputs = ["a", "b"]
 outputs = ["out"]
 sequential = false
 
+[xnor]
+description = "同或门"
+inputs = ["a", "b"]
+outputs = ["out"]
+sequential = false
+
 [or]
 description = "或门"
 inputs = ["a", "b"]

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = []
+license = { text = "GPL-3.0-or-later" }
 
 [project.scripts]
 clickclock = "clickclock:main"

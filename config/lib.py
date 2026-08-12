@@ -1,5 +1,12 @@
 # src/clickclock/lib.py
 
+# Copyright (C) 2026 Rain888
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 
 def _mask(width) -> int:
 	return (1 << width) - 1
@@ -27,6 +34,10 @@ def _eval_and(a, b, width) -> int:
 
 def _eval_xor(a, b, width) -> int:
 	return (a ^ b) & _mask(width)
+
+
+def _eval_xnor(a, b, width) -> int:
+	return ~(a ^ b) & _mask(width)
 
 
 def _eval_or(a, b, width) -> int:
@@ -83,6 +94,7 @@ EVAL_MAP = {
 	"not": _eval_not,
 	"and": _eval_and,
 	"xor": _eval_xor,
+	"xnor": _eval_xnor,
 	"or": _eval_or,
 	"nand": _eval_nand,
 	"nor": _eval_nor,
