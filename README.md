@@ -14,6 +14,10 @@ ClickClock 是一个轻量级的数字电路仿真器，使用自定义的硬件
 
 ## 快速开始
 
+### 系统要求
+
+- Python 3.12.8 或更高版本
+
 ### 安装
 
 ```bash
@@ -24,7 +28,7 @@ uv sync  # 或 pip install -e .
 
 ### 运行示例
 ```bash
-uv run clickclock
+uv run clickclock  # 或 clickclock
 ```
 
 ### 编写你的第一个电路
