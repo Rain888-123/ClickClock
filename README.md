@@ -81,12 +81,6 @@ port_name = signal_or_value
 use std, mylib
 ```
 
-### 宏定义
-
-```text
-MACRO := value
-```
-
 ## 项目架构
 
 ```text
